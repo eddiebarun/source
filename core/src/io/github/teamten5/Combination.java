@@ -2,8 +2,6 @@ package io.github.teamten5;
 
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.HashMap;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 public class Combination {
 
@@ -26,11 +24,17 @@ public class Combination {
         this.endingOnStation = endingOnStation;
     }
 
-    @Contract("_, _, _ -> new")
-    public static @NotNull Combination[] read(
-          @NotNull JsonValue jsonValue,
-          @NotNull HashMap<String, ItemType> items,
-          @NotNull HashMap<String, StationType> stations
+    public boolean isValid(StationType station, ItemType startingChefHolding,
+          ItemType startingOnStation) {
+        return this.station == station
+              && this.startingChefHolding == startingChefHolding
+              && this.startingOnStation == startingOnStation;
+    }
+
+    public static Combination[] read(
+          JsonValue jsonValue,
+          HashMap<String, ItemType> items,
+          HashMap<String, StationType> stations
     ) {
         String[] combinationValidStations = jsonValue.get("allowed-stations").asStringArray();
         Combination[] combinations = new Combination[combinationValidStations.length];
@@ -40,8 +44,8 @@ public class Combination {
             combinations[i] = new Combination(
                   combinationStation,
                   items.get(jsonValue.getString("start-chef")),
-                  items.get(jsonValue.getString("end-chef")),
                   items.get(jsonValue.getString("start-station")),
+                  items.get(jsonValue.getString("end-chef")),
                   items.get(jsonValue.getString("end-station"))
             );
         }

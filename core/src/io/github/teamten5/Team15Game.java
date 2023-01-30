@@ -2,12 +2,15 @@ package io.github.teamten5;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import io.github.teamten5.views.LevelScreen;
 import io.github.teamten5.views.MenuScreen;
 import io.github.teamten5.views.Views;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -18,7 +21,7 @@ public class Team15Game extends Game{
 	HashMap<String, ItemType> itemsTypes = new HashMap<>();
 	HashMap<String, OrderType[]> orderTypes = new HashMap<>();
 	HashMap<String, StationType> stationTypes = new HashMap<>();
-	HashMap<String, HashMap<StationType, ChefAction>> chefActions = new HashMap<>();
+	HashMap<String, ChefAction> chefActions = new HashMap<>();
 	HashMap<String, Combination[]> combinations = new HashMap<>();
 	HashMap<String, LevelType> levelTypes = new HashMap<>();
 
@@ -26,8 +29,9 @@ public class Team15Game extends Game{
 	@Override
 	public void create() {
 		loadJSON();
-		menuscreen = new MenuScreen(this);
-		setScreen(menuscreen);
+		// menuscreen = new MenuScreen(this);
+		Screen testLevelScreen = new LevelScreen(levelTypes.get("level1"));
+		setScreen(testLevelScreen);
 	}
 
 	public void changeScreen(Views screen) {
@@ -108,15 +112,21 @@ public class Team15Game extends Game{
 
 		// combination groups
 		JsonValue combinationGroupsJSON = combinationsJSONRoot.get("combination-groups");
-		for (int i = 0; i < combinationGroupsJSON.size; i++) {
-			Combination[] combinationGroup = new Combination[combinationGroupsJSON.get(i).size];
-			for (int j = 0; j < combinationGroupsJSON.get(i).size; j++) {
-				combinationGroup[j] = combinations.get(
-					combinationGroupsJSON.get(i).get(j).asString())[0];
+		for (JsonValue combinationGroupData: combinationGroupsJSON) {
+			ArrayList<Combination> combinationGroup = new ArrayList<>();
+			int i = 0;
+			int j = 0;
+			while (i < combinationGroupData.size) {
+				// System.out.println(combinationGroupData.get(i).asString());
+				combinationGroup.add(combinations.get(combinationGroupData.get(i).asString())[j]);
+				j++;
+				if (j >= combinations.get(combinationGroupData.get(i).asString()).length) {
+					j = 0;
+					i++;
+				}
 			}
-			combinations.put(combinationGroupsJSON.get(i).name, combinationGroup);
+			combinations.put(combinationGroupData.name, combinationGroup.toArray(Combination[]::new));
 		}
-
 		// levels.json
 
 		JsonValue levelsJSONRoot = jsonReader.parse(Gdx.files.internal("data/levels.json"));
